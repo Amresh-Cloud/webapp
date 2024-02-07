@@ -369,7 +369,7 @@ router.post("*", async (req, res) => {
 router.put("*", async (req, res) => {
   console.log("Bad Route");
   
-  res.status(404).end();
+  res.status(405).end();
 });
 
 module.exports = router;
