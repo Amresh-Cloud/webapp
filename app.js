@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
-const sequelize = require("../Cloud/DatabaseConnection/connection");
-const routes=require("../Cloud/RoutesHandler/routes");
+const sequelize = require("../webapp-fork1/DatabaseConnection/connection");
+const routes=require("../webapp-fork1/RouteHandler/routes");
 
 
 const port = 1000;
