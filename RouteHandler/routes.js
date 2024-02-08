@@ -357,13 +357,13 @@ router.put("/v1/user/self", async (req, res) => {
 router.get("*", async (req, res) => {
   console.log("Bad Route");
   res.header("Cache-Control", "no-cache");
-  res.status(404).end();
+  res.status(405).end();
 });
 
 router.post("*", async (req, res) => {
   console.log("Bad Route");
   res.header("Cache-Control", "no-cache");
-  res.status(404).end();
+  res.status(405).end();
 });
 
 router.put("*", async (req, res) => {
