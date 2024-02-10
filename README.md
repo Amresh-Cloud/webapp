@@ -1,7 +1,6 @@
 # webapp
 
-## Bootstrapping Database
-
+## Bootstrapping 
 
 
 ## Authentication
