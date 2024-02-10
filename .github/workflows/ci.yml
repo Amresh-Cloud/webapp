@@ -26,6 +26,9 @@ jobs:
     - name: run Health Check
       run: echo "Hello yml is running"
 
+    - name: Test
+      run: exit 1
+
 
 
       
