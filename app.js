@@ -10,6 +10,6 @@ app.use("/v1",dbCheck);
 app.use(routes);
 
 app.listen(port, () => {
-  sequelize.sync({force:true}).then(console.log("Server at port 1000"));
+  sequelize.sync({force:true}).then(console.log("Server at port 2500"));
 });
 module.exports=app;
