@@ -17,7 +17,8 @@ jobs:
       mysql:
         image: mysql:latest
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DBPASSWORDS }}
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
           MYSQL_DATABASE: ${{ secrets.DBNAME }}
           MYSQL_USER: ${{ secrets.DBUSER }}
           MYSQL_PASSWORD: ${{ secrets.DBPASSWORD }}
