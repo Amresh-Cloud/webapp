@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Creating Table if does not exist
-        run: mysql --host=172.18.0.1 -u root -p"${{ secrets.DBPASSWORD }}" -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DBNAME }};"
+        run: mysql --host=${{ secrets.DBHOST }} -u${{ secrets.DBUSER }} -p"${{ secrets.DBPASSWORD }}" -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DBNAME }};"
 
       - name: Checkout Repository
         uses: actions/checkout@v2
