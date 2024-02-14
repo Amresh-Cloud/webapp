@@ -1,0 +1,52 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - A3
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: test_database
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    env:
+      DBHOST: localhost
+      DBPORT: 3306
+      DBUSER: root
+      DBPASSWORD: root_password
+      DBNAME: test_database
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Set up MySQL
+        run: |
+          mysql -h localhost -u root -proot_password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Amresh@2024'; FLUSH PRIVILEGES;"
+
+      - name: Run Tests
+        run: npm test

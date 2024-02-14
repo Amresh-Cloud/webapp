@@ -20,6 +20,7 @@ async function createDatabase() {
         console.error('Error creating database:', error);
     }
 }
+
 const sequelize = new Sequelize(process.env.DBNAME,process.env.DBUSER,process.env.DBPASSWORD,{
 dialect:'mysql',
 host:process.env.DBHOST,
