@@ -5,7 +5,7 @@ const routes=require("./RouteHandler/routes");
 const dbCheck = require("./Middleware/dbcheck");
 
 
-const port = 1000;
+const port = 2500;
 app.use("/v1",dbCheck);
 app.use(routes);
 
