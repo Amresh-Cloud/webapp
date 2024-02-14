@@ -44,9 +44,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Set up MySQL
-        run: |
-          mysql -h localhost -u root -proot_password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Amresh@2024'; FLUSH PRIVILEGES;"
-
+      
       - name: Run Tests
         run: npm test
