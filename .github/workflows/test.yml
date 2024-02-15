@@ -20,17 +20,6 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:latest
-        env:
-          MYSQL_ROOT_HOST: ${{ secrets.DBHOST }}
-          MYSQL_DATABASE: ${{ secrets.DBNAME }}
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DBPASSWORD}}
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
       - name : Install MySQL
         run: |
@@ -46,8 +35,8 @@ jobs:
         with:
           node-version: "14"
 
-      - name: Install Dependencies
+      - name: Install All Dependencies
         run: npm install
 
-      - name: Run Tests
+      - name: Running Integration Test
         run: npm test
