@@ -7,11 +7,10 @@ env:
   DBPORT: ${{ secrets.DBPORT }}
   DBNAME: ${{ secrets.DBNAME }}
 
-
 on:
   push:
     branches:
-      - A3
+      - NewA3
   pull_request:
     branches:
       - main
@@ -26,22 +25,18 @@ jobs:
         image: mysql:latest
         env:
           MYSQL_ROOT_HOST: ${{ secrets.DBHOST }}
-
           MYSQL_DATABASE: ${{ secrets.DBNAME }}
-          
           MYSQL_ROOT_PASSWORD: ${{ secrets.DBPASSWORD}}
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-
-
-
-   
-
     steps:
-      - name: Creating Table if does not exist
-        run: mysql --host=${{ secrets.DBHOST }} -u${{ secrets.DBUSER }} -p"${{ secrets.DBPASSWORD }}" -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DBNAME }};"
+      - name : Install MySQL
+        run: |
+          sudo apt-get update
+          sudo systemctl start mysql.service
+          sudo mysql --user=root --password=root -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DB_NAME }};"
 
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -49,11 +44,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: "14"
 
       - name: Install Dependencies
         run: npm install
 
-      
       - name: Run Tests
         run: npm test
