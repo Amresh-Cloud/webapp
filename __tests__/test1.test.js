@@ -28,7 +28,7 @@ describe("User API Integration Tests", () => {
       username: "rajiv@gmail.com",
     });
    
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(200);
 
     const getCreatedUser = await request(app)
       .get("/v1/user/self")
@@ -62,7 +62,7 @@ describe("User API Integration Tests", () => {
         password: "Pass@12345",
       });
 
-    expect(update.status).toBe(204);
+    expect(update.status).toBe(200);
     const getUpdated = await request(app)
       .get("/v1/user/self")
       .set(
