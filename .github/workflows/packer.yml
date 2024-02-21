@@ -18,14 +18,8 @@ jobs:
 
       - name: Run packer validate
         run: |
-          if ! packer validate -var 'amresh_devkey=${{secrets.AMRESH_DEVKEY}}' ./packer/packer.pkr.hcl; then
-            echo "Failed - Packer validate"
-            exit 1
-          fi
+           packer validate -var 'amresh_devkey=${{secrets.AMRESH_DEVKEY}}' ./packer/packer.pkr.hcl
 
       - name: Run packer fmt
         run: |
-          if ! packer fmt -check ./packer/packer.pkr.hcl; then
-            echo "Failed - Packer fmt"
-            exit 1
-          fi
+         packer fmt -check ./packer/packer.pkr.hcl
