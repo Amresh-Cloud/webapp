@@ -14,12 +14,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Packer
-        run: packer init ./packer/packer.pkr.hcl
+        run: |
+          touch ./packer/packer.pkr.hcl 
+             echo amresh_devket\"${{ secrets.AMRESH_DEVKEY }}\" >> ./packer/packer.pkr.hcl 
+            packer init ./packer/packer.pkr.hcl
 
       - name: Run packer validate
         run: |
-           touch ./packer/packer.pkr.hcl 
-           echo amresh_devket\"${{ secrets.AMRESH_DEVKEY }}\" >> ./packer/packer.pkr.hcl 
+           
            packer validate -var-file=packer.pkvars.hcl packer.pkr.hcl
 
       - name: Run packer fmt
