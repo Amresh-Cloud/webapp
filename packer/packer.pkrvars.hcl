@@ -12,5 +12,4 @@ star_service_source       = "star.service"
 star_service_destination  = "/tmp/star.service"
 dependencies_script       = "dependencies.sh"
 owner_script              = "owner.sh"
-amresh_devkey             ="amre"
-amresh_devkey = "${{ secrets.AMRESH_DEVKEY }}"
+
