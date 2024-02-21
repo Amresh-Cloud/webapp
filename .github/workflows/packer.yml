@@ -8,14 +8,13 @@ env:
     DBNAME: ${{ secrets.DBNAME }}
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches: [main]
   
 
 jobs:
   validate-packer-build:
     name: Validate Packer Template and Run Tests
-    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
