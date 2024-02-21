@@ -9,14 +9,13 @@ env:
 
 on:
   pull_request:
-    branches: [main]
-  push:
-      branches: [A4]
+    types: [closed]
   
 
 jobs:
   validate-packer-build:
     name: Validate Packer Template and Run Tests
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
