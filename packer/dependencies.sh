@@ -38,14 +38,24 @@ sudo cp /tmp/webapp.zip /opt/webapp.zip
 
 echo "Extracting the web application archive"
 cd /opt || exit
-sudo unzip webapp.zip
-
+sudo mkdir webapp
+sudo unzip webapp.zip -d webapp
 ls -l
-
-# Navigate to the web application directory
+# go in the webapp
 cd webapp/ || exit
 
 ls -l
+sudo touch .env
+sudo sh -c 'echo "DBHOST=localhost" >> .env'
+sudo sh -c 'echo "DBUSER=root" >> .env'
+sudo sh -c 'echo "DBPASSWORD=Amresh@2024" >> .env'
+sudo sh -c 'echo "DBPORT=3306" >> .env'
+sudo sh -c 'echo "DBNAME=sys" >> .env'
+
+# Navigate to the web application directory
+# cd webapp/ || exit
+
+# ls -l
 
 echo "Installing the npm dependencies for the web application"
 sudo npm install
