@@ -13,17 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Set Key
+        run: echo 'amresh_devkey = "${{ secrets.AMRESH_DEVKEY }}"' >>./packer/packer.pkrvars.hcl 
+
       - name: Install Packer
-        run: |
-          touch ./packer/packer.pkr.hcl 
-             echo amresh_devket\"${{ secrets.AMRESH_DEVKEY }}\" >> ./packer/packer.pkr.hcl 
-            packer init ./packer/packer.pkr.hcl
+        run: packer init ./packer/packer.pkr.hcl
 
       - name: Run packer validate
         run: |
            
-           packer validate -var-file=packer.pkvars.hcl packer.pkr.hcl
+           packer validate -var-file=packer.pkrvars.hcl packer.pkr.hcl
 
       - name: Run packer fmt
         run: |
-         packer fmt -var-file=packer.pkvars.hcl packer.pkr.hcl
+          packer build -var-file=packer.pkrvars.hcl packer.pkr.hcl
