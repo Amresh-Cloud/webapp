@@ -34,3 +34,6 @@ jobs:
 
       - name: FMT Packer
         run: packer fmt ./packer/packer.pkr.hcl
+
+      - name: Run Packer validate
+        run: packer validate ./packer/packer.pkr.hcl
