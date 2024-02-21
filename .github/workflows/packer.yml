@@ -18,8 +18,10 @@ jobs:
 
       - name: Run packer validate
         run: |
-           packer validate -var 'amresh_devkey=${{secrets.AMRESH_DEVKEY}}' ./packer/packer.pkr.hcl
+           touch ./packer/packer.pkr.hcl 
+           echo amresh_devket\"${{ secrets.AMRESH_DEVKEY }}\" >> ./packer/packer.pkr.hcl 
+           packer validate -var-file=packer.pkvars.hcl packer.pkr.hcl
 
       - name: Run packer fmt
         run: |
-         packer fmt -var 'amresh_devkey=${{secrets.AMRESH_DEVKEY}}' ./packer/packer.pkr.hcl
+         packer fmt -var-file=packer.pkvars.hcl packer.pkr.hcl
