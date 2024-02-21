@@ -1,51 +1,51 @@
 variable "credentials_file" {
-  type    = string
+  type = string
 }
 
 variable "disk_size" {
-  type    = number
+  type = number
 }
 
 variable "image_name" {
-  type    = string
+  type = string
 }
 
 variable "project_id" {
-  type    = string
+  type = string
 }
 
 variable "source_image_family" {
-  type    = string
+  type = string
 }
 
 variable "ssh_username" {
-  type    = string
+  type = string
 }
 
 variable "zone" {
-  type    = string
+  type = string
 }
 
 variable "webapp_source" {
-  type    = string
+  type = string
 }
 
 variable "webapp_destination" {
-  type    = string
+  type = string
 }
 
 variable "star_service_source" {
-  type    = string
+  type = string
 }
 
 variable "star_service_destination" {
-  type    = string
+  type = string
 }
 
 variable "dependencies_script" {
-  type    = string
+  type = string
 }
 
 variable "owner_script" {
-  type    = string
+  type = string
 }
