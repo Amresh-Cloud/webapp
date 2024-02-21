@@ -50,7 +50,7 @@ variable "owner_script" {
   type    = string
 }
 variable "amresh_devkey" {
-  type = string
+  type = json
 }
 
 packer {
