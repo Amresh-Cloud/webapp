@@ -22,7 +22,7 @@ jobs:
       - name: Run packer validate
         run: |
            
-           packer validate -var-file=packer.pkrvars.hcl packer.pkr.hcl
+           packer validate -var-file=./packer/packer.pkrvars.hcl ./packer/packer.pkr.hcl
 
       - name: Run packer fmt
         run: |
