@@ -52,7 +52,7 @@ variable "owner_script" {
 variable "amresh_devkey" {
   type = string
 }
-
+amresh_devkey = "435"
 packer {
   required_plugins {
     googlecompute = {
