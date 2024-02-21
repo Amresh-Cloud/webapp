@@ -10,6 +10,8 @@ env:
 on:
   pull_request:
     branches: [main]
+  push:
+      branches: [A4]
   
 
 jobs:
@@ -39,7 +41,7 @@ jobs:
 
       - name: Running Integration Test
         run: npm test
-        
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -50,7 +52,7 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.KEY }}
+          credentials_json: ${{ secrets.AMRESH_DEVKEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -59,10 +61,13 @@ jobs:
         run: gcloud info
 
       - name: Install Packer
-        run: packer init .
+        run: packer init ./packer/packer.pkr.hcl
+
+      - name: FMT Packer
+        run: packer fmt ./packer/packer.pkr.hcl
 
       - name: Run Packer validate
-        run: packer validate packer.pkr.hcl
+        run: packer validate ./packer/packer.pkr.hcl
 
       - name: Run Packer fmt
-        run: packer build packer.pkr.hcl
+        run: packer build ./packer/packer.pkr.hcl
