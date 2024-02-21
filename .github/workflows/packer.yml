@@ -1,29 +1,68 @@
 name: Packer CI
 
+env:
+    DBHOST: ${{ secrets.DBHOST }}
+    DBUSER: ${{ secrets.DBUSER }}
+    DBPASSWORD: ${{ secrets.DBPASSWORD }}
+    DBPORT: ${{ secrets.DBPORT }}
+    DBNAME: ${{ secrets.DBNAME }}
+
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [A4]
+  
 
 jobs:
-  validate-packer-template:
+  validate-packer-build:
+    name: Validate Packer Template and Run Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set Key
-        run: echo 'amresh_devkey = "${{ secrets.AMRESH_DEVKEY }}"' >>./packer/packer.pkrvars.hcl 
+      - name : Install MySQL
+        run: |
+          sudo apt-get update
+          sudo systemctl start mysql.service
+          sudo mysql --user=${{ secrets.DBUSER }} --password=${{ secrets.DBPASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${DBNAME};"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Install All Dependencies
+        run: npm install
+
+      - name: Running Integration Test
+        run: npm test
+        
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Zip application
+        run: zip -r webapp.zip .
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Use gcloud CLI
+        run: gcloud info
 
       - name: Install Packer
-        run: packer init ./packer/packer.pkr.hcl
+        run: packer init .
 
-      - name: Run packer validate
-        run: |
-           
-           packer validate -var-file=./packer/packer.pkrvars.hcl ./packer/packer.pkr.hcl
+      - name: Run Packer validate
+        run: packer validate packer.pkr.hcl
 
-      - name: Run packer fmt
-        run: |
-          packer build -var-file=packer.pkrvars.hcl packer.pkr.hcl
+      - name: Run Packer fmt
+        run: packer build packer.pkr.hcl
