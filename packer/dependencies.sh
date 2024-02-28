@@ -48,11 +48,3 @@ sudo npm install
 
 echo "Running npm install"
 
-# Start the MySQL service to verify its status
-echo "Verifying the status of MySQL service"
-sudo systemctl status mysqld
-
-# Check if MySQL is enabled to start on boot
-sudo systemctl start mysqld
-
-sudo systemctl status mysqld
