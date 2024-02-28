@@ -8,17 +8,9 @@ echo "Installing unzip"
 sudo dnf install -y unzip
 
 # Install MySQL server
-echo "Installing MySQL"
-sudo dnf install -y mysql-server
+
 
 # Start the MySQL service
-echo "Starting mysql"
-sudo systemctl start mysqld
-sudo systemctl enable mysqld
-
-# Change the password for the root user in MySQL
-echo "Changing the password in mysql"
-sudo mysql -u root -p -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Amresh@2024'; FLUSH PRIVILEGES;"
 
 # Install Node.js
 echo "Installing Node.js"
@@ -45,12 +37,6 @@ ls -l
 cd webapp/ || exit
 
 ls -l
-sudo touch .env
-sudo sh -c 'echo "DBHOST=localhost" >> .env'
-sudo sh -c 'echo "DBUSER=root" >> .env'
-sudo sh -c 'echo "DBPASSWORD=Amresh@2024" >> .env'
-sudo sh -c 'echo "DBPORT=3306" >> .env'
-sudo sh -c 'echo "DBNAME=sys" >> .env'
 
 # Navigate to the web application directory
 # cd webapp/ || exit
