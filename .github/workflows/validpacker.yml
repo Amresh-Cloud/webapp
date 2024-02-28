@@ -1,11 +1,10 @@
 name: Valid Packer CI
 
 on:
-  
-
-  push :
+  pull_request:
     branches:
-      - A5
+      - main
+
 
 jobs:
   validate-packer:
