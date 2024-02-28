@@ -9,7 +9,7 @@ env:
 
 on:
   push:
-    branches: [main]
+    branches: [A5]
   
 
 jobs:
