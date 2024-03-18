@@ -3,6 +3,7 @@ const router = express.Router();
 const sequelize = require("../DatabaseConnection/connection");
 const User = require("../UserModel/userSchema");
 const bcrypt = require("bcrypt");
+const logger=require("../app");
 
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
@@ -17,6 +18,7 @@ router.use((req, res, next) => {
     req.method === "HEAD" ||
     req.method === "OPTIONS"
   ) {
+    logger.error("Method not Allowed");
     console.log("No other method than Get allowed");
     res.header("Cache-Control", "no-cache");
     res.status(405).end();
@@ -31,6 +33,7 @@ router.get("/healthz", async (req, res) => {
     (req.query && Object.keys(req.query).length !== 0) ||
     req.headers["content-length"] > 0
   ) {
+    logger.error("Body Not Allowed");
     console.log("Body not allowed");
     res.header("Cache-Control", "no-cache");
     res.status(400).end();
@@ -38,10 +41,12 @@ router.get("/healthz", async (req, res) => {
   }
   try {
     await sequelize.authenticate();
+    logger.info("Connected to Database");
     console.log("Connected to Database");
     res.header("Cache-Control", "no-cache");
     res.status(200).end();
   } catch (err) {
+    logger.error("Database Not Connected");
     console.log("Database Not Connected", err);
     res.header("Cache-Control", "no-cache");
     res.status(503).end();
@@ -55,6 +60,7 @@ router.post("/v1/user", async (req, res) => {
     const { first_name, last_name, password, username, ...extraFields } =
       req.body;
     if (Object.keys(extraFields).length !== 0) {
+      logger.error("Bad Request Only First Name, Last Name, Password and UserName  are allowed");
       res.header("Cache-Control", "no-cache");
       return res
         .status(400)
@@ -64,6 +70,7 @@ router.post("/v1/user", async (req, res) => {
         });
     }
     if ( !username|| !password|| !first_name|| !last_name) {
+      logger.error("Bad Request - All Fields required");
       res.header("Cache-Control", "no-cache");
       return res
         .status(400)
@@ -72,6 +79,7 @@ router.post("/v1/user", async (req, res) => {
     }
     if(password){
         if (!password.trim()) {
+            logger.error("Password cannot be empty");
             res.header("Cache-Control", "no-cache");
             return res.status(400).json({
               error: "Password cannot be empty",
@@ -80,6 +88,7 @@ router.post("/v1/user", async (req, res) => {
         }
         if(username){
             if (!username.trim()) {
+                logger.error("UserName cannot be empty");
                 res.header("Cache-Control", "no-cache");
                 return res.status(400).json({
                   error: "UserName cannot be empty",
@@ -88,6 +97,7 @@ router.post("/v1/user", async (req, res) => {
             }
             if(first_name){
                 if (!first_name.trim()) {
+                   logger.error("First Name cannot be empty");
                     res.header("Cache-Control", "no-cache");
                     return res.status(400).json({
                       error: "FirstName cannot be empty",
@@ -97,6 +107,7 @@ router.post("/v1/user", async (req, res) => {
 
                 if(last_name){
                     if (!last_name.trim()) {
+                        logger.error("Last Name cannot be empty");
                         res.header("Cache-Control", "no-cache");
                         return res.status(400).json({
                           error: "LastName cannot be empty",
@@ -109,6 +120,7 @@ router.post("/v1/user", async (req, res) => {
   
     const validUser = await User.findOne({ where: { username } });
     if (validUser) {
+        logger.error("User Already Exists");
         res.header("Cache-Control", "no-cache");
       return res.status(400).json({ error: "User Alredy Exists" });
     }
@@ -129,6 +141,7 @@ router.post("/v1/user", async (req, res) => {
       account_created,
       account_updated,
     } = newUser;
+    logger.info("Successfully Created User",userEmail);
     res.header("Cache-Control", "no-cache");
     res.status(201).json({
       id,
@@ -142,13 +155,16 @@ router.post("/v1/user", async (req, res) => {
     if (error.name === 'SequelizeValidationError') {
         const errorMessage = error.errors.map(err => err.message).join('. ');
         res.header("Cache-Control", "no-cache");
+        logger.error("Sequelize Validation Error",error);
         return res.status(400).json({ error: errorMessage });
     }
     if (error.name === 'SequelizeConnectionRefusedError') {
+      logger.error("Sequelize Connection Refused Error",error);
         console.error("Service Unavailable");
         res.header("Cache-Control", "no-cache");
         res.status(503).end();
     }
+    logger.error("Internal Server Error",error);
     console.error(error);
     res.header("Cache-Control", "no-cache");
     res.status(500).json({ error: "Internal Server Error" });
@@ -162,6 +178,7 @@ router.get("/v1/user/self", async (req, res) => {
         (req.query && Object.keys(req.query).length !== 0) ||
         req.headers["content-length"] > 0
       ) {
+        logger.error("Body not Allowed");
         console.log("Body not allowed");
         res.header("Cache-Control", "no-cache");
         res.status(400).json({error:"No Body allowed"}).end();
@@ -173,6 +190,7 @@ router.get("/v1/user/self", async (req, res) => {
 
     if (!authHeader) {
        res.header("Cache-Control", "no-cache");
+       logger.error("No Credentials Provided to Get User");
       return res
         .status(401)
         .json({ error: "No credentials provided" });
@@ -184,6 +202,7 @@ router.get("/v1/user/self", async (req, res) => {
 
     if (!email || !password) {
       res.header("Cache-Control", "no-cache");
+      logger.error("Email and Password are Missing");
       return res
         .status(400)
         .json({ error: "Email and Password are missing" });
@@ -193,6 +212,7 @@ router.get("/v1/user/self", async (req, res) => {
 
     if (!user) {
         res.header("Cache-Control", "no-cache");
+        logger.error("Invalid Credentials");
       return res
         .status(401)
         .json({ error: "Invalid credentials" });
@@ -202,6 +222,7 @@ router.get("/v1/user/self", async (req, res) => {
 
     if (!isPasswordValid) {
         res.header("Cache-Control", "no-cache");
+        logger.error("Invalid Credentials");
       return res
         .status(401)
         .json({ error: "Invalid credentials" });
@@ -215,6 +236,7 @@ router.get("/v1/user/self", async (req, res) => {
       account_created,
       account_updated,
     } = user;
+    logger.info("Success of Get Request for",username);
     res.header("Cache-Control", "no-cache");
     res.status(200).json({
       id,
@@ -226,10 +248,12 @@ router.get("/v1/user/self", async (req, res) => {
     });
   } catch (error) {
     if (error.name === 'SequelizeConnectionRefusedError') {
+        logger.error("Service Unavailable");
         console.error("Service Unavailable");
         res.header("Cache-Control", "no-cache");
         res.status(503).end();
     }
+    logger.error("Internal Server Error");
     console.error(error);
     res.header("Cache-Control", "no-cache");
     res.status(500).json({ error: "Internal Server Error" });
@@ -242,6 +266,7 @@ router.put("/v1/user/self", async (req, res) => {
     await sequelize.authenticate();
     const { first_name, last_name, password , ...extraFields} = req.body;
     if (Object.keys(req.body).length === 0) {
+        logger.error("Request body cannot be empty");
         res.header("Cache-Control", "no-cache");
       return res.status(400).json({
         error: " Request body cannot be empty",
@@ -254,14 +279,16 @@ router.put("/v1/user/self", async (req, res) => {
     );
     
     if (invalidFields.length > 0) {
+        logger.error("Only first_name, last_name, password are allowed");
         res.header("Cache-Control", "no-cache");
       return res.status(400).json({
-        error: " Only first_name, last_name, password, and username are allowed",
+        error: " Only first_name, last_name, password are allowed",
       });
     }
 
     // Check if at least one of the fields (first_name, last_name, newpassword) is provided
     if (!first_name && !last_name && !password) {
+      logger.error("At least one field (first_name, last_name, newpassword) must be Provided");
         res.header("Cache-Control", "no-cache");
       return res.status(400).json({
         error:
@@ -274,6 +301,7 @@ router.put("/v1/user/self", async (req, res) => {
 
     if (!authHeader) {
         res.header("Cache-Control", "no-cache");
+        logger.error("No Credentials Provided");
       return res
         .status(400)
         .json({ error: "No credentials provided" });
@@ -284,6 +312,7 @@ router.put("/v1/user/self", async (req, res) => {
     const [email, Upassword] = decodedAuthData.split(":");
 
     if (!email || !Upassword) {
+        logger.error("Email and Password are missing");
         res.header("Cache-Control", "no-cache");
       return res
         .status(400)
@@ -294,6 +323,7 @@ router.put("/v1/user/self", async (req, res) => {
     const user = await User.findOne({ where: { username: email } });
 
     if (!user) {
+      logger.error("Invalid credentials",email);
         res.header("Cache-Control", "no-cache");
       return res
         .status(400)
@@ -304,6 +334,7 @@ router.put("/v1/user/self", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(Upassword, user.password);
 
     if (!isPasswordValid) {
+        logger.error("Invalid credentials",email);
         res.header("Cache-Control", "no-cache");
       return res
         .status(400)
@@ -323,6 +354,7 @@ router.put("/v1/user/self", async (req, res) => {
         const hashNewPassword = await bcrypt.hash(password, 10);
         user.password = hashNewPassword;
       } else {
+        logger.error("Password cannot be empty");
         res.header("Cache-Control", "no-cache");
         return res.status(400).json({
           error: "Password cannot be empty",
@@ -335,20 +367,24 @@ router.put("/v1/user/self", async (req, res) => {
 
     // Save the updated user to the database
     await user.save();
+    logger.info("Updated User",email);
     res.header("Cache-Control", "no-cache");
     res.status(204).end();
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
+      logger.error("Sequelize Validation Error",error);
         const errorMessage = error.errors.map(err => err.message).join('. ');
         res.header("Cache-Control", "no-cache");
         return res.status(400).json({ error: errorMessage });
     }
     if (error.name === 'SequelizeConnectionRefusedError') {
+        logger.error("Sequelize Connection Refused Error",error);
         console.error("Service Unavailable");
         res.header("Cache-Control", "no-cache");
         res.status(503).end();
     }
     console.error(error);
+    logger.error("Internal Server Error",error);
     res.header("Cache-Control", "no-cache");
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -356,17 +392,20 @@ router.put("/v1/user/self", async (req, res) => {
 
 router.get("*", async (req, res) => {
   console.log("Bad Route");
+  logger.error("Bad Route");
   res.header("Cache-Control", "no-cache");
   res.status(405).end();
 });
 
 router.post("*", async (req, res) => {
   console.log("Bad Route");
+  logger.error("Bad Route");
   res.header("Cache-Control", "no-cache");
   res.status(405).end();
 });
 
 router.put("*", async (req, res) => {
+  logger.error("Bad Route",error);
   console.log("Bad Route");
   
   res.status(405).end();

@@ -1,6 +1,7 @@
 const Sequelize=require('sequelize');
 const dotenv=require('dotenv');
 const mysql=require('mysql2/promise');
+const logger=require("../app");
 dotenv.config();
 async function createDatabase() {
     try {
@@ -14,9 +15,10 @@ async function createDatabase() {
         await db.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DBNAME}`);
 
         await db.end();
-
+        logger.info("Database Connected");
         console.log('Database created successfully');
     } catch (error) {
+        logger.error("Error Creating Database", error);
         console.error('Error creating database:', error);
     }
 }
