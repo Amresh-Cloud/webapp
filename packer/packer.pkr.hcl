@@ -4,7 +4,7 @@ variable "disk_size" {
 }
 variable "image_name" {
   type    = string
-  default = "custom-image-11"
+  default = "custom-image-12"
 }
 
 variable "project_id" {
@@ -86,6 +86,10 @@ build {
   provisioner "file" {
     destination = var.star_service_destination
     source      = var.star_service_source
+  }
+  provisioner "file" {
+    destination ="/tmp/config.yaml"
+    source      = "config.yaml"
   }
 
   provisioner "shell" {
