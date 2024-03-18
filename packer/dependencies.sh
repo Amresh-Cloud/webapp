@@ -57,3 +57,9 @@ sudo systemctl status google-cloud-ops-agent
 
 echo "Starting Ops Agent"
 sudo systemctl start google-cloud-ops-agent
+
+echo "coping ops agent config file" 
+sudo cp /tmp/config.yaml /etc/google-cloud-ops-agent/config.yaml
+
+echo "restarting ops agent"
+sudo systemctl restart google-cloud-ops-agent
