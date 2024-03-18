@@ -9,8 +9,8 @@ env:
 
 on:
   push:
-    branches: [main]
-  
+    branches:
+      - A6
 
 jobs:
   validate-packer-build:
@@ -67,5 +67,5 @@ jobs:
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
-      - name: Run Packer fmt
+      - name: Run Packer Image Build
         run: packer build ./packer/packer.pkr.hcl
