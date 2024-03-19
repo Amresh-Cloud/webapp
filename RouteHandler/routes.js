@@ -3,7 +3,7 @@ const router = express.Router();
 const sequelize = require("../DatabaseConnection/connection");
 const User = require("../UserModel/userSchema");
 const bcrypt = require("bcrypt");
-const logger=require("../app");
+const logger=require("../logger");
 
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
@@ -18,7 +18,7 @@ router.use((req, res, next) => {
     req.method === "HEAD" ||
     req.method === "OPTIONS"
   ) {
-    logger.error("Method not Allowed");
+    
     console.log("No other method than Get allowed");
     res.header("Cache-Control", "no-cache");
     res.status(405).end();
@@ -151,21 +151,21 @@ router.post("/v1/user", async (req, res) => {
       account_created,
       account_updated,
     });
-  } catch (error) {
-    if (error.name === 'SequelizeValidationError') {
+  } catch (err) {
+    if (err.name === 'SequelizeValidationError') {
         const errorMessage = error.errors.map(err => err.message).join('. ');
         res.header("Cache-Control", "no-cache");
-        logger.error("Sequelize Validation Error",error);
+        logger.error("Sequelize Validation Error",err);
         return res.status(400).json({ error: errorMessage });
     }
-    if (error.name === 'SequelizeConnectionRefusedError') {
-      logger.error("Sequelize Connection Refused Error",error);
+    if (err.name === 'SequelizeConnectionRefusedError') {
+      logger.error("Sequelize Connection Refused Error",err);
         console.error("Service Unavailable");
         res.header("Cache-Control", "no-cache");
         res.status(503).end();
     }
-    logger.error("Internal Server Error",error);
-    console.error(error);
+    logger.error("Internal Server Error",err);
+    
     res.header("Cache-Control", "no-cache");
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -246,15 +246,15 @@ router.get("/v1/user/self", async (req, res) => {
       account_created,
       account_updated,
     });
-  } catch (error) {
-    if (error.name === 'SequelizeConnectionRefusedError') {
+  } catch (err) {
+    if (err.name === 'SequelizeConnectionRefusedError') {
         logger.error("Service Unavailable");
         console.error("Service Unavailable");
         res.header("Cache-Control", "no-cache");
         res.status(503).end();
     }
     logger.error("Internal Server Error");
-    console.error(error);
+    console.error(err);
     res.header("Cache-Control", "no-cache");
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -370,21 +370,21 @@ router.put("/v1/user/self", async (req, res) => {
     logger.info("Updated User",email);
     res.header("Cache-Control", "no-cache");
     res.status(204).end();
-  } catch (error) {
-    if (error.name === 'SequelizeValidationError') {
-      logger.error("Sequelize Validation Error",error);
+  } catch (err) {
+    if (err.name === 'SequelizeValidationError') {
+      logger.error("Sequelize Validation Error",err);
         const errorMessage = error.errors.map(err => err.message).join('. ');
         res.header("Cache-Control", "no-cache");
         return res.status(400).json({ error: errorMessage });
     }
-    if (error.name === 'SequelizeConnectionRefusedError') {
-        logger.error("Sequelize Connection Refused Error",error);
+    if (err.name === 'SequelizeConnectionRefusedError') {
+        logger.error("Sequelize Connection Refused Error",err);
         console.error("Service Unavailable");
         res.header("Cache-Control", "no-cache");
         res.status(503).end();
     }
-    console.error(error);
-    logger.error("Internal Server Error",error);
+    console.error(err);
+    logger.error("Internal Server Error",err);
     res.header("Cache-Control", "no-cache");
     res.status(500).json({ error: "Internal Server Error" });
   }

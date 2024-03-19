@@ -87,11 +87,6 @@ build {
     destination = var.star_service_destination
     source      = var.star_service_source
   }
-  provisioner "file" {
-    destination ="/tmp/config.yaml"
-    source      = "config.yaml"
-  }
-
   provisioner "shell" {
     script = var.dependencies_script
   }

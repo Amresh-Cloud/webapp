@@ -46,20 +46,22 @@ ls -l
 echo "Installing the npm dependencies for the web application"
 sudo npm install
 
+sudo mkdir -p /var/log/webapp
+
+sudo chown csye6225:csye6225 /var/log/webapp
 echo "Running npm install"
 
 echo "Installing Google Cloud Ops Agent"
 sudo curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
 sudo bash add-google-cloud-ops-agent-repo.sh --also-install
 
+sudo cp /opt/webapp/config.yaml /etc/google-cloud-ops-agent/config.yaml
+
 echo "Checking Ops Agent status"
 sudo systemctl status google-cloud-ops-agent
 
 echo "Starting Ops Agent"
 sudo systemctl start google-cloud-ops-agent
-
-echo "coping ops agent config file" 
-sudo cp /tmp/config.yaml /etc/google-cloud-ops-agent/config.yaml
 
 echo "restarting ops agent"
 sudo systemctl restart google-cloud-ops-agent
