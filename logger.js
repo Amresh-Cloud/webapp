@@ -1,10 +1,6 @@
 const winston = require("winston");
-const { LoggingWinston } = require("@google-cloud/logging-winston");
-const { format } = require("winston");
+const format = require("winston");
 
-
-
-const loggingWinston = new LoggingWinston();
 
 const logger = winston.createLogger({
   level: "info",
@@ -14,8 +10,6 @@ const logger = winston.createLogger({
     format.json()
   ),
   transports: [
-    new winston.transports.Console(),
-    loggingWinston,
     new winston.transports.File({ filename: "/var/log/webapp/logger.log" }),
   ],
 });
