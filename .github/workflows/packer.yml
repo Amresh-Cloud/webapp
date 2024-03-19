@@ -33,7 +33,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
-      - name: Create log directory and file
+      - name: Creating log folder and file
         run: |
             sudo mkdir -p /var/log/webapp
             sudo touch /var/log/webapp/logger.log
