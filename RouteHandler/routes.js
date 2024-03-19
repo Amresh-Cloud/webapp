@@ -18,8 +18,8 @@ router.use((req, res, next) => {
     req.method === "HEAD" ||
     req.method === "OPTIONS"
   ) {
-    
-    console.log("No other method than Get allowed");
+    logger.error("Method not Allowed");
+  
     res.header("Cache-Control", "no-cache");
     res.status(405).end();
   } else {
