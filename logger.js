@@ -1,5 +1,5 @@
 const winston = require("winston");
-const format = require("winston");
+const { format } = winston;
 
 
 const logger = winston.createLogger({
