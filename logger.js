@@ -3,14 +3,8 @@ const { LoggingWinston } = require("@google-cloud/logging-winston");
 const { format } = require("winston");
 
 
-const projectId = "devv-414701";
-const keyFilename =
-  "/Users/amreshrajvindersingh/Documents/Applications/Keys/devv-414701-8f340b8f8963.json"; // Replace './path/to/your/google-cloud-key.json' with the actual path to your JSON key file
 
-const loggingWinston = new LoggingWinston({
-  projectId: projectId,
-  keyFilename: keyFilename,
-});
+const loggingWinston = new LoggingWinston();
 
 const logger = winston.createLogger({
   level: "info",
