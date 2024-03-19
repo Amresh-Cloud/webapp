@@ -33,11 +33,16 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
+      - name: Create log directory and file
+        run: |
+            sudo mkdir -p /var/log/webapp
+            sudo touch /var/log/webapp/logger.log
 
       - name: Install All Dependencies
         run: npm install
 
-      
+      - name: Running Integration Test
+        run: npm test
 
       - name: Checkout code
         uses: actions/checkout@v2
