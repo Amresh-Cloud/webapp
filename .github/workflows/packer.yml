@@ -37,7 +37,8 @@ jobs:
       - name: Install All Dependencies
         run: npm install
 
-
+      - name: Running Integration Test
+        run: npm test
 
       - name: Checkout code
         uses: actions/checkout@v2
