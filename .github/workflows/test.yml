@@ -34,6 +34,11 @@ jobs:
 
       - name: Install All Dependencies
         run: npm install
+        
+      - name: Creating log folder and file
+        run: |
+            sudo mkdir -p /var/log/webapp
+            sudo touch /var/log/webapp/logger.log
 
       - name: Running Integration Test
         run: npm test
