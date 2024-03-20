@@ -8,9 +8,8 @@ env:
     DBNAME: ${{ secrets.DBNAME }}
 
 on:
-  push:
-    branches:
-      - A6
+   push:
+    branches: [main]
 
 jobs:
   validate-packer-build:
