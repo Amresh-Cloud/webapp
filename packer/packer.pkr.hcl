@@ -4,7 +4,7 @@ variable "disk_size" {
 }
 variable "image_name" {
   type    = string
-  default = "custom-image-16"
+  default = "custom-image-17"
 }
 
 variable "project_id" {
