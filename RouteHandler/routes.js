@@ -141,7 +141,7 @@ router.post("/v1/user", async (req, res) => {
       account_created,
       account_updated,
     } = newUser;
-    logger.info("Successfully Created a User",username);
+    logger.info("Successfully Created a User");
     res.header("Cache-Control", "no-cache");
     res.status(201).json({
       id,
@@ -236,7 +236,7 @@ router.get("/v1/user/self", async (req, res) => {
       account_created,
       account_updated,
     } = user;
-    logger.info("Success of Get Request for",username);
+    logger.info("Success of Get Request");
     res.header("Cache-Control", "no-cache");
     res.status(200).json({
       id,
@@ -367,7 +367,7 @@ router.put("/v1/user/self", async (req, res) => {
 
     // Save the updated user to the database
     await user.save();
-    logger.info("Updated User",email);
+    logger.info("Updated User");
     res.header("Cache-Control", "no-cache");
     res.status(204).end();
   } catch (err) {
