@@ -25,7 +25,7 @@ describe("User API Integration Tests", () => {
       first_name: "Rajiv",
       last_name: "Singh",
       password: "Pass@123",
-      username: "rajiv@gmail.com",
+      username: "rajiv@test.com",
     });
    
     expect(response.status).toBe(201);
@@ -34,7 +34,7 @@ describe("User API Integration Tests", () => {
       .get("/v1/user/self")
       .set(
         "Authorization",
-        `Basic ${Buffer.from("rajiv@gmail.com:Pass@123").toString("base64")}`
+        `Basic ${Buffer.from("rajiv@test.com:Pass@123").toString("base64")}`
       );
 
     expect(getCreatedUser.status).toBe(200);
@@ -45,7 +45,7 @@ describe("User API Integration Tests", () => {
       first_name: "Sourav",
       last_name: "Singh",
       password: "Pass@1234",
-      username: "sourav@gmail.com",
+      username: "sourav@test.com",
     });
   
     expect(response.status).toBe(201);
@@ -54,7 +54,7 @@ describe("User API Integration Tests", () => {
       .put("/v1/user/self")
       .set(
         "Authorization",
-        `Basic ${Buffer.from("sourav@gmail.com:Pass@1234").toString("base64")}`
+        `Basic ${Buffer.from("sourav@test.com:Pass@1234").toString("base64")}`
       )
       .send({
         first_name: "Souravvv",
@@ -67,7 +67,7 @@ describe("User API Integration Tests", () => {
       .get("/v1/user/self")
       .set(
         "Authorization",
-        `Basic ${Buffer.from("sourav@gmail.com:Pass@12345").toString("base64")}`
+        `Basic ${Buffer.from("sourav@test.com:Pass@12345").toString("base64")}`
       );
 
     expect(getUpdated.status).toBe(200);

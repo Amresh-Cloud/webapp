@@ -1,7 +1,6 @@
 const {DataTypes}= require('sequelize');
 const sequelize =require('../DatabaseConnection/connection.js');
 
-// defining user model here 
 const User=sequelize.define('User', {
     id:{
         type: DataTypes.UUID,
@@ -48,6 +47,15 @@ const User=sequelize.define('User', {
         },
     },
    },
+   verified_user: {
+       type: DataTypes.BOOLEAN,
+       allowNull: false,
+       defaultValue: false 
+   },
+   token_sent_timestamp: {
+       type: DataTypes.DATE, 
+       allowNull: true 
+   }
 },
 {
     timestamps:true,
