@@ -1,5 +1,5 @@
 const sequelize = require("../DatabaseConnection/connection");
-const logger=require("../logger");
+const logger=require("../utils/logger");
 const dbCheck = async (req, res, next) => {
   try {
     await sequelize.authenticate();

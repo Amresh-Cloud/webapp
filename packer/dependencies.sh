@@ -55,7 +55,7 @@ echo "Installing Google Cloud Ops Agent"
 sudo curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
 sudo bash add-google-cloud-ops-agent-repo.sh --also-install
 
-sudo cp /opt/webapp/config.yaml /etc/google-cloud-ops-agent/config.yaml
+sudo cp /opt/webapp/utils/config.yaml /etc/google-cloud-ops-agent/config.yaml
 
 echo "Checking Ops Agent status"
 sudo systemctl status google-cloud-ops-agent
