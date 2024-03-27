@@ -9,7 +9,7 @@ env:
 
 on:
    push:
-    branches: [FixA7]
+    branches: [main]
 
 jobs:
   validate-packer-build:
