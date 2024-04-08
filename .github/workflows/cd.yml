@@ -79,7 +79,7 @@ jobs:
             --type='opportunistic' \
             --max-surge=3 \
             --max-unavailable=3 \
-            --min-ready=0 \
+            --min-ready=1 \
             --minimal-action='replace' \
             --most-disruptive-allowed-action='replace' \
             --replacement-method='substitute' \
