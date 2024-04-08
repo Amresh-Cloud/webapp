@@ -14,34 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install MySQL and create database (if needed)
-      - name: Install MySQL
-        run: |
-          sudo apt-get update
-          sudo systemctl start mysql.service
-          sudo mysql --user=${{ secrets.DBUSER }} --password=${{ secrets.DBPASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DBNAME }};"
 
-      # Set up Node.js and install dependencies
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-
-      # Create log folder and file
-      - name: Creating log folder and file
-        run: |
-          sudo mkdir -p /var/log/webapp
-          sudo touch /var/log/webapp/logger.log
-
-      # Install application dependencies and run tests
-      - name: Install All Dependencies and Run Tests
-        run: |
-          npm install
-          npm test
-
-      # Zip application
-      - name: Zip application
-        run: zip -r webapp.zip .
 
       # Authenticate with Google Cloud
       - name: Authenticate with Google Cloud
