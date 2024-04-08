@@ -72,16 +72,9 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       # Update Managed Instance Group
-      - name: Start Update for Managed Instance Group
+      - name: Update Managed Instance Group
         run: |
-          gcloud compute instance-groups managed rolling-action start-update gp-manager \
+          gcloud compute instance-groups managed set-instance-template gp-manager \
             --project=devv-414701 \
-            --type='opportunistic' \
-            --max-surge=3 \
-            --max-unavailable=3 \
-            --min-ready=1 \
-            --minimal-action='replace' \
-            --most-disruptive-allowed-action='replace' \
-            --replacement-method='substitute' \
-            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance12 \
-            --region=us-east1
+            --region=us-east1 \
+            --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance12
