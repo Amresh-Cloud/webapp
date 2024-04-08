@@ -74,7 +74,7 @@ jobs:
       # Update Managed Instance Group
       - name: Start Update for Managed Instance Group
         run: |
-          gcloud beta compute instance-groups managed rolling-action start-update gp-manager \
+          gcloud compute instance-groups managed rolling-action start-update gp-manager \
             --project=devv-414701 \
             --type='opportunistic' \
             --max-surge=3 \
