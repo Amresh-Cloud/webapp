@@ -28,7 +28,7 @@ jobs:
       - name: Create Instance Template
         id: create-template
         run: |
-          TEMPLATE_NAME="webappinstance13"
+          TEMPLATE_NAME="webappinstance12"
           gcloud compute instance-templates create $TEMPLATE_NAME \
             --project=devv-414701 \
             --machine-type=n1-standard-1 \
@@ -77,10 +77,10 @@ jobs:
           gcloud compute instance-groups managed set-instance-template gp-manager \
             --project=devv-414701 \
             --region=us-east1 \
-            --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13
+            --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance12
       - name: Start Rolling Update
         run: |
-              gcloud beta compute instance-groups managed rolling-action start-update gp-manager \
+              gcloud compute instance-groups managed rolling-action start-update gp-manager \
                 --project=devv-414701 \
                 --type='opportunistic' \
                 --max-surge=3 \
@@ -89,5 +89,5 @@ jobs:
                 --minimal-action='replace' \
                 --most-disruptive-allowed-action='' \
                 --replacement-method='substitute' \
-                --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13 \
+                --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance12 \
                 --region=us-east1
