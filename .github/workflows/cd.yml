@@ -1,0 +1,118 @@
+name: Packer CI
+
+env:
+  DBHOST: ${{ secrets.DBHOST }}
+  DBUSER: ${{ secrets.DBUSER }}
+  DBPASSWORD: ${{ secrets.DBPASSWORD }}
+  DBPORT: ${{ secrets.DBPORT }}
+  DBNAME: ${{ secrets.DBNAME }}
+
+on:
+  push:
+    branches: [A9]
+
+jobs:
+  validate-packer-build:
+    name: Validate Packer Template and Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install MySQL
+        run: |
+          sudo apt-get update
+          sudo systemctl start mysql.service
+          sudo mysql --user=${{ secrets.DBUSER }} --password=${{ secrets.DBPASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${DBNAME};"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Creating log folder and file
+        run: |
+          sudo mkdir -p /var/log/webapp
+          sudo touch /var/log/webapp/logger.log
+
+      - name: Install All Dependencies
+        run: npm install
+
+      - name: Running Integration Test
+        run: npm test
+
+      - name: Zip application
+        run: zip -r webapp.zip .
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.AMRESH_DEVKEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install Packer
+        run: |
+          packer init ./packer/packer.pkr.hcl
+          packer fmt ./packer/packer.pkr.hcl
+          packer validate ./packer/packer.pkr.hcl
+          packer build ./packer/packer.pkr.hcl
+
+  create-instance-template:
+    name: Create Instance Template
+    runs-on: ubuntu-latest
+    needs: validate-packer-build  # Wait for Packer build to complete successfully
+
+    env:
+      PROJECT_ID: devv-414701
+      INSTANCE_TEMPLATE_NAME: webapp-vm-template
+      MACHINE_TYPE: n1-standard-1
+      NETWORK_NAME: my-vpc
+      SUBNETWORK_NAME: webapp
+      CUSTOM_IMAGE_ID: "global/images/custom-image-27"  # Use the custom image ID created by Packer
+      SERVICE_ACCOUNT_EMAIL: webapp@devv-414701.iam.gserviceaccount.com
+      SCOPES: |
+        https://www.googleapis.com/auth/devstorage.read_only
+        https://www.googleapis.com/auth/logging.write
+        https://www.googleapis.com/auth/monitoring.write
+        https://www.googleapis.com/auth/pubsub
+        https://www.googleapis.com/auth/service.management.readonly
+        https://www.googleapis.com/auth/servicecontrol
+        https://www.googleapis.com/auth/trace.append
+
+    steps:
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.AMRESH_DEVKEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Create Instance Template
+        run: |
+          gcloud compute instance-templates create ${{ env.INSTANCE_TEMPLATE_NAME }} \
+            --machine-type=${{ env.MACHINE_TYPE }} \
+            --network=${{ env.NETWORK_NAME }} \
+            --subnet=${{ env.SUBNETWORK_NAME }} \
+            --tags=load-balanced-backend,allow-health-check,http-server \
+            --image=${{ env.CUSTOM_IMAGE_ID }} \
+            --image-project=${{ env.PROJECT_ID }} \
+            --boot-disk-size=100GB \
+            --boot-disk-type=pd-standard \
+            --boot-disk-device-name=persistent-disk-0 \
+            --metadata=startup-script="#!/bin/bash
+                if [ ! -f \"/opt/webapp/.env\" ]; then
+                    touch /opt/webapp/.env
+                fi
+                echo \"DBHOST=10.216.191.2\" > /opt/webapp/.env
+                echo \"DBUSER=webapp\" >> /opt/webapp/.env
+                echo \"DBPASSWORD=syLmFDhcrQCzNOSK\" >> /opt/webapp/.env
+                echo \"DBNAME=webapp\" >> /opt/webapp/.env
+                " \
+                            --service-account=${{ env.SERVICE_ACCOUNT_EMAIL }} \
+                            --scopes="${{ env.SCOPES }}"
