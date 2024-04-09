@@ -38,10 +38,10 @@ jobs:
             if [ ! -f \"/opt/webapp/.env\" ]; then
                 touch /opt/webapp/.env
             fi
-            echo \"DBHOST=10.216.191.2\" > /opt/webapp/.env
-            echo \"DBUSER=webapp\" >> /opt/webapp/.env
-            echo \"DBPASSWORD=syLmFDhcrQCzNOSK\" >> /opt/webapp/.env
-            echo \"DBNAME=webapp\" >> /opt/webapp/.env
+            echo "DBHOST=10.247.90.2" > /opt/webapp/.env
+            echo "DBUSER=webapp" >> /opt/webapp/.env
+            echo "DBPASSWORD=SUPXzDll528hVBvL" >> /opt/webapp/.env
+            echo "DBNAME=webapp" >> /opt/webapp/.env
             " \
             --maintenance-policy=MIGRATE \
             --provisioning-model=STANDARD \
@@ -82,11 +82,9 @@ jobs:
         run: |
             gcloud compute instance-groups managed rolling-action start-update gp-manager \
             --project=devv-414701 \
-            --type='opportunistic' \
-            --max-surge=3 \
-            --max-unavailable=3 \
-            --minimal-action='replace' \
-            --most-disruptive-allowed-action=replace \
-            --replacement-method='substitute' \
+            --type='proactive' \
             --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13 \
             --region=us-east1
+
+      - name : check group instance
+        run: gcloud compute instance-groups managed wait-until gp-manager --version-target-reached  --region=us-east1
