@@ -24,96 +24,85 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Zip application files
+
       - name: Zip application
         run: zip -r webapp.zip .
 
-      # Authenticate with Google Cloud again if needed
-      - name: Authenticate with Google Cloud (again)
+      - name: Authenticate with Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.AMRESH_DEVKEY }}
 
-      # Set up Cloud SDK again if needed
-      - name: Set up Cloud SDK (again)
+      - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Display gcloud SDK info
       - name: Use gcloud CLI
         run: gcloud info
 
-      # Commenting out Packer build and setting IMAGE_NAME to custom-image-34
-      #- name: Run Packer Image Build
-      #  id: packer-build
-      #  run: |
-      #    packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
-      #    IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
-      #    echo "::set-output name=image_name::${IMAGE_NAME}"
-      #  continue-on-error: true
+      - name: Install Packer
+        run: packer init ./packer/packer.pkr.hcl
 
-      # Set IMAGE_NAME to custom-image-34
-      - name: Set IMAGE_NAME to custom-image-34
-        id: set_image_name
-        run: echo "::set-output name=image_name::custom-image-34"
+      - name: FMT Packer
+        run: packer fmt ./packer/packer.pkr.hcl
 
-      # Create Instance Template using custom-image-34
+      - name: Run Packer validate
+        run: packer validate ./packer/packer.pkr.hcl
+
+      - name: Run Packer Image Build
+        id: packer-build
+        run: |
+            packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
+            IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+            echo "::set-output name=image_name::${IMAGE_NAME}"
+      
       - name: Create Instance Template
         run: |
-          # Get the image name (custom-image-34)
-          IMAGE_NAME="${{ steps.set_image_name.outputs.image_name }}"
-
-          # Construct the instance template name
-          TEMPLATE_NAME="webappinstance-${IMAGE_NAME}"
-
-          # Create instance template with metadata and other options
-          gcloud compute instance-templates create $TEMPLATE_NAME \
-            --project=devv-414701 \
-            --machine-type=n1-standard-1 \
-            --network-interface=subnet=webapp,no-address \
-            --instance-template-region=us-east1 \
-            --metadata=startup-script="#!/bin/bash
-              if [ ! -f \"/opt/webapp/.env\" ]; then
-                  touch /opt/webapp/.env
-              fi
-              echo \"DBHOST=10.247.90.2\" > /opt/webapp/.env
-              echo \"DBUSER=webapp\" >> /opt/webapp/.env
-              echo \"DBPASSWORD=SUPXzDll528hVBvL\" >> /opt/webapp/.env
-              echo \"DBNAME=webapp\" >> /opt/webapp/.env
-              " \
-            --maintenance-policy=MIGRATE \
-            --provisioning-model=STANDARD \
-            --service-account=webapp@devv-414701.iam.gserviceaccount.com \
-            --scopes=https://www.googleapis.com/auth/cloud-platform \
-            --region=us-east1 \
-            --tags=load-balanced-backend,allow-health-check,http-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/${IMAGE_NAME},kms-key=projects/devv-414701/locations/us-east1/keyRings/9fmoh/cryptoKeys/instance-key9fmoh,mode=rw,size=100,type=pd-standard \
-            --no-shielded-secure-boot \
-            --shielded-vtpm \
-            --shielded-integrity-monitoring \
-            --reservation-affinity=any
-
-      # Update managed instance group with the new instance template
+              IMAGE_NAME="${{ steps.packer-build.outputs.image_name }}"
+              gcloud compute instance-templates create webappinstance13 \
+                --project=devv-414701 \
+                --machine-type=n1-standard-1 \
+                --network-interface=subnet=webapp,no-address \
+                --instance-template-region=us-east1 \
+                --metadata=startup-script="#!/bin/bash
+                  if [ ! -f \"/opt/webapp/.env\" ]; then
+                      touch /opt/webapp/.env
+                  fi
+                  echo "DBHOST=10.199.160.2" > /opt/webapp/.env
+                  echo "DBUSER=webapp" >> /opt/webapp/.env
+                  echo "DBPASSWORD=0Aw3Hj4B9v78N9Q3" >> /opt/webapp/.env
+                  echo "DBNAME=webapp" >> /opt/webapp/.env
+                  " \
+                --maintenance-policy=MIGRATE \
+                --provisioning-model=STANDARD \
+                --service-account=webapp@devv-414701.iam.gserviceaccount.com \
+                --scopes=https://www.googleapis.com/auth/cloud-platform \
+                --region=us-east1 \
+                --tags=load-balanced-backend,allow-health-check,http-server \
+                --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/${IMAGE_NAME},kms-key=projects/devv-414701/locations/us-east1/keyRings/9fmoh/cryptoKeys/instance-key9fmoh,mode=rw,size=100,type=pd-standard \
+                --no-shielded-secure-boot \
+                --shielded-vtpm \
+                --shielded-integrity-monitoring \
+                --reservation-affinity=any
+    
+          # Update managed instance group with the new instance template
       - name: Update Managed Instance Group
         run: |
-          # Set the instance template for the managed instance group
-          gcloud compute instance-groups managed set-instance-template gp-manager \
-            --project=devv-414701 \
-            --region=us-east1 \
-            --template=projects/devv-414701/regions/us-east1/instanceTemplates/$TEMPLATE_NAME
-
-      # Start rolling update for the managed instance group
+              gcloud compute instance-groups managed set-instance-template gp-manager \
+                --project=devv-414701 \
+                --region=us-east1 \
+                --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13
+    
+          # Start rolling update for the managed instance group
       - name: Start Rolling Update
         run: |
-          # Start a proactive rolling update for the managed instance group
-          gcloud compute instance-groups managed rolling-action start-update gp-manager \
-            --project=devv-414701 \
-            --type='proactive' \
-            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/$TEMPLATE_NAME \
-            --region=us-east1
-
-      # Wait until the managed instance group reaches the desired state
+              gcloud compute instance-groups managed rolling-action start-update gp-manager \
+                --project=devv-414701 \
+                --type='proactive' \
+                --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13 \
+                --region=us-east1
+    
+          # Wait until the managed instance group reaches the desired state
       - name: Wait for Instance Group to Reach Target State
         run: |
-          # Wait until the managed instance group reaches the desired target state
-          gcloud compute instance-groups managed wait-until gp-manager --version-target-reached --region=us-east1
+              gcloud compute instance-groups managed wait-until gp-manager --version-target-reached --region=us-east1
