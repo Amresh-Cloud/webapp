@@ -56,12 +56,9 @@ jobs:
             IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
             echo "::set-output name=image_name::${IMAGE_NAME}"
       
-      - name: Update Managed Instance Group
+      - name: Create Instance Template
         run: |
-              # Get the Packer-generated image name
               IMAGE_NAME="${{ steps.packer-build.outputs.image_name }}"
-              
-              # Create instance template using the Packer image
               gcloud compute instance-templates create webappinstance13 \
                 --project=devv-414701 \
                 --machine-type=n1-standard-1 \
@@ -71,36 +68,41 @@ jobs:
                   if [ ! -f \"/opt/webapp/.env\" ]; then
                       touch /opt/webapp/.env
                   fi
-                  echo \"DBHOST=10.247.90.2\" > /opt/webapp/.env
-                  echo \"DBUSER=webapp\" >> /opt/webapp/.env
-                  echo \"DBPASSWORD=SUPXzDll528hVBvL\" >> /opt/webapp/.env
-                  echo \"DBNAME=webapp\" >> /opt/webapp/.env
+                  echo "DBHOST=10.199.160.2" > /opt/webapp/.env
+                  echo "DBUSER=webapp" >> /opt/webapp/.env
+                  echo "DBPASSWORD=0Aw3Hj4B9v78N9Q3" >> /opt/webapp/.env
+                  echo "DBNAME=webapp" >> /opt/webapp/.env
                   " \
                 --maintenance-policy=MIGRATE \
                 --provisioning-model=STANDARD \
                 --service-account=webapp@devv-414701.iam.gserviceaccount.com \
-                --scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_only \
+                --scopes=https://www.googleapis.com/auth/cloud-platform \
                 --region=us-east1 \
                 --tags=load-balanced-backend,allow-health-check,http-server \
-                --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/${IMAGE_NAME},mode=rw,size=100,type=pd-standard \
+                --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/${IMAGE_NAME},kms-key=projects/devv-414701/locations/us-east1/keyRings/9fmoh/cryptoKeys/instance-key9fmoh,mode=rw,size=100,type=pd-standard \
                 --no-shielded-secure-boot \
                 --shielded-vtpm \
                 --shielded-integrity-monitoring \
                 --reservation-affinity=any
-          
-              # Update managed instance group with the new instance template
+    
+          # Update managed instance group with the new instance template
+      - name: Update Managed Instance Group
+        run: |
               gcloud compute instance-groups managed set-instance-template gp-manager \
                 --project=devv-414701 \
                 --region=us-east1 \
                 --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13
-          
-              # Start rolling update
+    
+          # Start rolling update for the managed instance group
+      - name: Start Rolling Update
+        run: |
               gcloud compute instance-groups managed rolling-action start-update gp-manager \
                 --project=devv-414701 \
                 --type='proactive' \
                 --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13 \
                 --region=us-east1
-          
-              # Wait until instance group reaches the desired state
+    
+          # Wait until the managed instance group reaches the desired state
+      - name: Wait for Instance Group to Reach Target State
+        run: |
               gcloud compute instance-groups managed wait-until gp-manager --version-target-reached --region=us-east1
-          
