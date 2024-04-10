@@ -72,11 +72,11 @@ jobs:
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
-      - name: Run Packer Image Build
-        run: |
-            packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt || exit 0
-            IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
-            echo "::set-output name=image_name::${IMAGE_NAME}"
+      # - name: Run Packer Image Build
+      #   run: |
+      #       packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt || exit 0
+      #       IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+      #       echo "::set-output name=image_name::${IMAGE_NAME}"
 
       - name: Create Instance Template
         run: |
@@ -100,7 +100,7 @@ jobs:
             --scopes=https://www.googleapis.com/auth/cloud-platform \
             --region=${{ secrets.GCP_REGION }} \
             --tags=load-balanced-backend,allow-health-check,http-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${{ secrets.GCP_PROJECT_ID }}/global/images/${{ steps.packer-build.outputs.image_name }},kms-key=projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/keyRings/${{ secrets.GCP_KMS_KEY_RING }}/cryptoKeys/${{ secrets.GCP_KMS_CRYPTO_KEY }},mode=rw,size=100,type=pd-standard \
+            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${{ secrets.GCP_PROJECT_ID }}/global/images/image123,kms-key=projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/keyRings/${{ secrets.GCP_KMS_KEY_RING }}/cryptoKeys/${{ secrets.GCP_KMS_CRYPTO_KEY }},mode=rw,size=100,type=pd-standard \
             --no-shielded-secure-boot \
             --shielded-vtpm \
             --shielded-integrity-monitoring \
