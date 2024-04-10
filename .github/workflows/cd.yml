@@ -1,3 +1,4 @@
+
 name: Packer CI
 
 on:
@@ -14,13 +15,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Authenticate and Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+      # Authenticate with Google Cloud
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.AMRESH_DEVKEY }}
 
+      # Set up Google Cloud SDK
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+
       - name: Zip application
         run: zip -r webapp.zip .
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.AMRESH_DEVKEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Use gcloud CLI
+        run: gcloud info
 
       - name: Install Packer
         run: packer init ./packer/packer.pkr.hcl
