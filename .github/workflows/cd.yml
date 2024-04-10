@@ -43,31 +43,25 @@ jobs:
       - name: Use gcloud CLI
         run: gcloud info
 
-      # Install Packer
-      - name: Install Packer
-        run: packer init ./packer/packer.pkr.hcl
+      # Commenting out Packer build and setting IMAGE_NAME to custom-image-34
+      #- name: Run Packer Image Build
+      #  id: packer-build
+      #  run: |
+      #    packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
+      #    IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+      #    echo "::set-output name=image_name::${IMAGE_NAME}"
+      #  continue-on-error: true
 
-      # Format Packer configuration
-      - name: FMT Packer
-        run: packer fmt ./packer/packer.pkr.hcl
+      # Set IMAGE_NAME to custom-image-34
+      - name: Set IMAGE_NAME to custom-image-34
+        id: set_image_name
+        run: echo "::set-output name=image_name::custom-image-34"
 
-      # Validate Packer configuration
-      - name: Run Packer validate
-        run: packer validate ./packer/packer.pkr.hcl
-
-    #   # Build Packer image and capture output
-    #   - name: Run Packer Image Build
-    #     id: packer-build
-    #     run: |
-    #       packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
-    #       IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
-    #       echo "::set-output name=image_name::${IMAGE_NAME}"
-
-      # Create Instance Template using Packer-generated image
+      # Create Instance Template using custom-image-34
       - name: Create Instance Template
         run: |
-          # Get the Packer-generated image name
-          IMAGE_NAME="custom-image-34"
+          # Get the image name (custom-image-34)
+          IMAGE_NAME="${{ steps.set_image_name.outputs.image_name }}"
 
           # Construct the instance template name
           TEMPLATE_NAME="webappinstance-${IMAGE_NAME}"
@@ -106,7 +100,7 @@ jobs:
           gcloud compute instance-groups managed set-instance-template gp-manager \
             --project=devv-414701 \
             --region=us-east1 \
-            --template=$TEMPLATE_NAME
+            --template=projects/devv-414701/regions/us-east1/instanceTemplates/$TEMPLATE_NAME
 
       # Start rolling update for the managed instance group
       - name: Start Rolling Update
@@ -115,7 +109,7 @@ jobs:
           gcloud compute instance-groups managed rolling-action start-update gp-manager \
             --project=devv-414701 \
             --type='proactive' \
-            --version=template=$TEMPLATE_NAME \
+            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/$TEMPLATE_NAME \
             --region=us-east1
 
       # Wait until the managed instance group reaches the desired state
