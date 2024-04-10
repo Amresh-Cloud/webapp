@@ -49,16 +49,16 @@ jobs:
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
-      - name: Run Packer Image Build
-        id: packer-build
-        run: |
-            packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
-            IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
-            echo "::set-output name=image_name::${IMAGE_NAME}"
+    #   - name: Run Packer Image Build
+    #     id: packer-build
+    #     run: |
+    #         packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
+    #         IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+    #         echo "::set-output name=image_name::${IMAGE_NAME}"
       
       - name: Create Instance Template
         run: |
-              IMAGE_NAME="${{ steps.packer-build.outputs.image_name }}"
+              IMAGE_NAME="custom-image-34"
               gcloud compute instance-templates create webappinstance13 \
                 --project=devv-414701 \
                 --machine-type=n1-standard-1 \
