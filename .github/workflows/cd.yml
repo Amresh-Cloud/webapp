@@ -24,67 +24,83 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Create Instance Template
-      - name: Create Instance Template
-        id: create-template
-        run: |
-          TEMPLATE_NAME="webappinstance13"
-          gcloud compute instance-templates create $TEMPLATE_NAME \
-            --project=devv-414701 \
-            --machine-type=n1-standard-1 \
-            --network-interface=subnet=webapp,no-address \
-            --instance-template-region=us-east1 \
-            --metadata=startup-script="#!/bin/bash
-            if [ ! -f \"/opt/webapp/.env\" ]; then
-                touch /opt/webapp/.env
-            fi
-            echo "DBHOST=10.247.90.2" > /opt/webapp/.env
-            echo "DBUSER=webapp" >> /opt/webapp/.env
-            echo "DBPASSWORD=SUPXzDll528hVBvL" >> /opt/webapp/.env
-            echo "DBNAME=webapp" >> /opt/webapp/.env
-            " \
-            --maintenance-policy=MIGRATE \
-            --provisioning-model=STANDARD \
-            --service-account=webapp@devv-414701.iam.gserviceaccount.com \
-            --scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_only \
-            --region=us-east1 \
-            --tags=load-balanced-backend,allow-health-check,http-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/custom-image-27,mode=rw,size=100,type=pd-standard \
-            --no-shielded-secure-boot \
-            --shielded-vtpm \
-            --shielded-integrity-monitoring \
-            --reservation-affinity=any
 
-  update-managed-group:
-    name: Update Managed Instance Group
-    needs: [validate-packer-build]
-    runs-on: ubuntu-latest
+      - name: Zip application
+        run: zip -r webapp.zip .
 
-    steps:
-      # Authenticate with Google Cloud
       - name: Authenticate with Google Cloud
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.AMRESH_DEVKEY }}
 
-      # Set up Google Cloud SDK
-      - name: Set up Google Cloud SDK
+      - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Update Managed Instance Group
+      - name: Use gcloud CLI
+        run: gcloud info
+
+      - name: Install Packer
+        run: packer init ./packer/packer.pkr.hcl
+
+      - name: FMT Packer
+        run: packer fmt ./packer/packer.pkr.hcl
+
+      - name: Run Packer validate
+        run: packer validate ./packer/packer.pkr.hcl
+
+      - name: Run Packer Image Build
+        id: packer-build
+        run: |
+            packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
+            IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+            echo "::set-output name=image_name::${IMAGE_NAME}"
+      
       - name: Update Managed Instance Group
         run: |
-          gcloud compute instance-groups managed set-instance-template gp-manager \
-            --project=devv-414701 \
-            --region=us-east1 \
-            --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13
-      - name: Start Rolling Update
-        run: |
-            gcloud compute instance-groups managed rolling-action start-update gp-manager \
-            --project=devv-414701 \
-            --type='proactive' \
-            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13 \
-            --region=us-east1
-
-      - name : check group instance
-        run: gcloud compute instance-groups managed wait-until gp-manager --version-target-reached  --region=us-east1
+              # Get the Packer-generated image name
+              IMAGE_NAME="${{ steps.packer-build.outputs.image_name }}"
+              
+              # Create instance template using the Packer image
+              gcloud compute instance-templates create webappinstance13 \
+                --project=devv-414701 \
+                --machine-type=n1-standard-1 \
+                --network-interface=subnet=webapp,no-address \
+                --instance-template-region=us-east1 \
+                --metadata=startup-script="#!/bin/bash
+                  if [ ! -f \"/opt/webapp/.env\" ]; then
+                      touch /opt/webapp/.env
+                  fi
+                  echo \"DBHOST=10.247.90.2\" > /opt/webapp/.env
+                  echo \"DBUSER=webapp\" >> /opt/webapp/.env
+                  echo \"DBPASSWORD=SUPXzDll528hVBvL\" >> /opt/webapp/.env
+                  echo \"DBNAME=webapp\" >> /opt/webapp/.env
+                  " \
+                --maintenance-policy=MIGRATE \
+                --provisioning-model=STANDARD \
+                --service-account=webapp@devv-414701.iam.gserviceaccount.com \
+                --scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_only \
+                --region=us-east1 \
+                --tags=load-balanced-backend,allow-health-check,http-server \
+                --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/${IMAGE_NAME},mode=rw,size=100,type=pd-standard \
+                --no-shielded-secure-boot \
+                --shielded-vtpm \
+                --shielded-integrity-monitoring \
+                --reservation-affinity=any
+          
+              # Update managed instance group with the new instance template
+              gcloud compute instance-groups managed set-instance-template gp-manager \
+                --project=devv-414701 \
+                --region=us-east1 \
+                --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13
+          
+              # Start rolling update
+              gcloud compute instance-groups managed rolling-action start-update gp-manager \
+                --project=devv-414701 \
+                --type='proactive' \
+                --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance13 \
+                --region=us-east1
+          
+              # Wait until instance group reaches the desired state
+              gcloud compute instance-groups managed wait-until gp-manager --version-target-reached --region=us-east1
+          
