@@ -11,7 +11,7 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.File({
-      filename: "logger.log",
+      filename: "/var/log/webapp/logger.log",
       format: format.combine(
         format((info) => {
           const edtTimestamp = subHours(info.timestamp, 4);
