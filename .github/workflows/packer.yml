@@ -100,7 +100,7 @@ jobs:
             --scopes=https://www.googleapis.com/auth/cloud-platform \
             --region=${{ secrets.GCP_REGION }} \
             --tags=load-balanced-backend,allow-health-check,http-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${{ secrets.GCP_PROJECT_ID }}/global/images/image46,kms-key=projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/keyRings/${{ secrets.GCP_KMS_KEY_RING }}/cryptoKeys/${{ secrets.GCP_KMS_CRYPTO_KEY }},mode=rw,size=100,type=pd-standard \
+            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${{ secrets.GCP_PROJECT_ID }}/global/images/custom-image-45,kms-key=projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/keyRings/${{ secrets.GCP_KMS_KEY_RING }}/cryptoKeys/${{ secrets.GCP_KMS_CRYPTO_KEY }},mode=rw,size=100,type=pd-standard \
             --no-shielded-secure-boot \
             --shielded-vtpm \
             --shielded-integrity-monitoring \
