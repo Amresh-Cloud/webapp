@@ -9,7 +9,7 @@ app.use("/v1",dbCheck);
 app.use(routes);
 
 app.listen(port, () => {
-  sequelize.sync().then(console.log('Server at port',port));
+  sequelize.sync({force:true}).then(console.log('Server at port',port));
   logger.info("App is Running on port");
 
 });
