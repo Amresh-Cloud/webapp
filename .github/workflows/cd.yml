@@ -68,6 +68,17 @@ jobs:
           packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt || exit 0
           IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
           echo "::set-output name=image_name::${IMAGE_NAME}"
+      - name: Debug Secret Values
+        run: |
+          echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
+          echo "GCP_REGION: $GCP_REGION"
+          echo "GCP_DB_HOST: $GCP_DB_HOST"
+          echo "GCP_DB_USER: $GCP_DB_USER"
+          echo "GCP_DB_PASSWORD: $GCP_DB_PASSWORD"
+          echo "GCP_DB_NAME: $GCP_DB_NAME"
+          echo "GCP_KMS_KEY_RING: $GCP_KMS_KEY_RING"
+          echo "GCP_KMS_CRYPTO_KEY: $GCP_KMS_CRYPTO_KEY"
+          echo "GCP_GROUP_MANAGER: $GCP_GROUP_MANAGER"
 
       - name: Create Instance Template
         run: |
