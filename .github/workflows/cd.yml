@@ -52,7 +52,7 @@ jobs:
       - name: Run Packer Image Build
         id: packer-build
         run: |
-            packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
+            packer build ./packer/packer.pkr.hcl | tee output.txt
             IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
             echo "::set-output name=image_name::${IMAGE_NAME}"
       
