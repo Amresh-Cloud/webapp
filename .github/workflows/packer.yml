@@ -80,7 +80,7 @@ jobs:
 
       - name: Create Instance Template
         run: |
-            gcloud compute instance-templates create ${{ steps.packer-build.outputs.image_name }} \
+            gcloud compute instance-templates create ${{ secrets.GCP_TEMPLATE_NAME}} \
             --project=${{secrets.GCP_PROJECT_ID}} \
             --machine-type=n1-standard-1 \
             --network-interface=subnet=webapp,no-address \
@@ -111,14 +111,14 @@ jobs:
             gcloud compute instance-groups managed set-instance-template ${{ secrets.GCP_GROUP_MANAGER }} \
                 --project=${{ secrets.GCP_PROJECT_ID }} \
                 --region=${{ secrets.GCP_REGION }} \
-                --template=projects/${{ secrets.GCP_PROJECT_ID }}/regions/${{ secrets.GCP_REGION }}/instanceTemplates/${{ steps.packer-build.outputs.image_name }}
+                --template=projects/${{ secrets.GCP_PROJECT_ID }}/regions/${{ secrets.GCP_REGION }}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME}}
 
       - name: Start Rolling Update
         run: |
             gcloud compute instance-groups managed rolling-action start-update "${GCP_GROUP_MANAGER}" \
                 --project=${{secrets.GCP_PROJECT_ID}} \
                 --type='proactive' \
-                --version=template=projects/${{secrets.GCP_PROJECT_ID}}/regions/${{secrets.GCP_REGION}}/instanceTemplates/${{ steps.packer-build.outputs.image_name }} \
+                --version=template=projects/${{secrets.GCP_PROJECT_ID}}/regions/${{secrets.GCP_REGION}}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME}} \
                 --region=${{secrets.GCP_REGION}}
 
       - name: Wait for Instance Group to Reach Target State
