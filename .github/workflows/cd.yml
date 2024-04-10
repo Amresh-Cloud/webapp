@@ -55,19 +55,19 @@ jobs:
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
-      # Build Packer image and capture output
-      - name: Run Packer Image Build
-        id: packer-build
-        run: |
-          packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
-          IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
-          echo "::set-output name=image_name::${IMAGE_NAME}"
+    #   # Build Packer image and capture output
+    #   - name: Run Packer Image Build
+    #     id: packer-build
+    #     run: |
+    #       packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt
+    #       IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+    #       echo "::set-output name=image_name::${IMAGE_NAME}"
 
       # Create Instance Template using Packer-generated image
       - name: Create Instance Template
         run: |
           # Get the Packer-generated image name
-          IMAGE_NAME="${{ steps.packer-build.outputs.image_name }}"
+          IMAGE_NAME="custom-image-34"
 
           # Construct the instance template name
           TEMPLATE_NAME="webappinstance-${IMAGE_NAME}"
@@ -106,7 +106,7 @@ jobs:
           gcloud compute instance-groups managed set-instance-template gp-manager \
             --project=devv-414701 \
             --region=us-east1 \
-            --template=projects/devv-414701/regions/us-east1/instanceTemplates/$TEMPLATE_NAME
+            --template=$TEMPLATE_NAME
 
       # Start rolling update for the managed instance group
       - name: Start Rolling Update
@@ -115,7 +115,7 @@ jobs:
           gcloud compute instance-groups managed rolling-action start-update gp-manager \
             --project=devv-414701 \
             --type='proactive' \
-            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/$TEMPLATE_NAME \
+            --version=template=$TEMPLATE_NAME \
             --region=us-east1
 
       # Wait until the managed instance group reaches the desired state
