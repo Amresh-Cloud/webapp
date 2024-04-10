@@ -22,11 +22,6 @@ jobs:
       - name: Zip application
         run: zip -r webapp.zip .
 
-      - name: Install Packer
-        run: |
-          curl -O https://releases.hashicorp.com/packer/1.7.7/packer_1.7.7_linux_amd64.zip
-          unzip packer_1.7.7_linux_amd64.zip
-          sudo mv packer /usr/local/bin/
 
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
