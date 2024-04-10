@@ -22,13 +22,18 @@ jobs:
       - name: Zip application
         run: zip -r webapp.zip .
 
+      - name: Install Packer
+        run: packer init ./packer/packer.pkr.hcl
+
+      - name: FMT Packer
+        run: packer fmt ./packer/packer.pkr.hcl
 
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
       - name: Run Packer Image Build
         id: packer-build
-        continue-on-error: true
+
         run: |
           packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt || exit 0
           IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
