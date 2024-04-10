@@ -115,7 +115,7 @@ jobs:
 
       - name: Start Rolling Update
         run: |
-            gcloud compute instance-groups managed rolling-action start-update "${GCP_GROUP_MANAGER}" \
+            gcloud compute instance-groups managed rolling-action start-update ${{ secrets.GCP_GROUP_MANAGER }} \
                 --project=${{ secrets.GCP_PROJECT_ID }} \
                 --type='proactive' \
                 --version=template=projects/${{ secrets.GCP_PROJECT_ID }}/regions/${{ secrets.GCP_REGION }}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME }} \
