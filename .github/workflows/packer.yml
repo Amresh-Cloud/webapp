@@ -11,7 +11,7 @@ env:
 
 on:
    push:
-    branches: [main,A9]
+    branches: [main]
 
 jobs:
   validate-packer-build:
@@ -72,11 +72,11 @@ jobs:
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
-      # - name: Run Packer Image Build
-      #   run: |
-      #       packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt || exit 0
-      #       IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
-      #       echo "::set-output name=image_name::${IMAGE_NAME}"
+      - name: Run Packer Image Build
+        run: |
+            packer build -machine-readable ./packer/packer.pkr.hcl | tee output.txt || exit 0
+            IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
+            echo "::set-output name=image_name::${IMAGE_NAME}"
 
       - name: Create Instance Template
         run: |
