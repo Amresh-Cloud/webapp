@@ -11,37 +11,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v2
 
- 
+      # Authenticate with Google Cloud
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.AMRESH_DEVKEY }}
 
-     
+      # Set up Google Cloud SDK
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-
+      # Zip the application
       - name: Zip application
         run: zip -r webapp.zip .
 
+      # Authenticate with Google Cloud again (if necessary)
+      - name: Authenticate with Google Cloud (Second Authentication)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.AMRESH_DEVKEY }}
 
+      # Set up Cloud SDK again (if necessary)
+      - name: Set up Cloud SDK (Second Setup)
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Install Packer
       - name: Install Packer
         run: packer init ./packer/packer.pkr.hcl
 
-
+      # Format Packer configuration
       - name: FMT Packer
         run: packer fmt ./packer/packer.pkr.hcl
 
-
+      # Validate Packer configuration
       - name: Run Packer validate
         run: packer validate ./packer/packer.pkr.hcl
 
-      
+      # Run Packer Image Build and capture image name
       - name: Run Packer Image Build
         id: packer-build
         run: |
@@ -49,17 +59,14 @@ jobs:
           IMAGE_NAME=$(grep 'artifact,0,id' output.txt | cut -d, -f6)
           echo "::set-output name=image_name::${IMAGE_NAME}"
 
-      # Create Instance Template using Packer image
+      # Create Instance Template using Packer-generated image
       - name: Create Instance Template
         run: |
           # Get the Packer-generated image name
           IMAGE_NAME="${{ steps.packer-build.outputs.image_name }}"
-          
-          # Construct the template name
-          TEMPLATE_NAME="webappinstance-${IMAGE_NAME}"
-          
-          # Create instance template
-          gcloud compute instance-templates create $TEMPLATE_NAME \
+
+          # Create instance template with customized settings
+          gcloud compute instance-templates create webappinstance-${IMAGE_NAME} \
             --project=devv-414701 \
             --machine-type=n1-standard-1 \
             --network-interface=subnet=webapp,no-address \
@@ -85,24 +92,24 @@ jobs:
             --shielded-integrity-monitoring \
             --reservation-affinity=any
 
-      #  Update managed instance group with the new instance template
+      # Update managed instance group with the new instance template
       - name: Update Managed Instance Group
         run: |
           gcloud compute instance-groups managed set-instance-template gp-manager \
             --project=devv-414701 \
             --region=us-east1 \
-            --template=projects/devv-414701/regions/us-east1/instanceTemplates/${TEMPLATE_NAME}
+            --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance-${IMAGE_NAME}
 
-      #  Start rolling update for the managed instance group
+      # Start rolling update for the managed instance group
       - name: Start Rolling Update
         run: |
           gcloud compute instance-groups managed rolling-action start-update gp-manager \
             --project=devv-414701 \
             --type='proactive' \
-            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/${TEMPLATE_NAME} \
+            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance-${IMAGE_NAME} \
             --region=us-east1
 
-      #  Wait until the managed instance group reaches the desired state
+      # Wait until the managed instance group reaches the desired state
       - name: Wait for Instance Group to Reach Target State
         run: |
           gcloud compute instance-groups managed wait-until gp-manager --version-target-reached --region=us-east1
