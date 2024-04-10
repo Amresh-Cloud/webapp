@@ -1,6 +1,17 @@
 
 name: Packer CI
 
+env:
+    GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+    GCP_REGION: ${{ secrets.GCP_REGION }}
+    GCP_DB_HOST: ${{ secrets.GCP_DB_HOST }}
+    GCP_DB_USER: ${{ secrets.GCP_DB_USER }}
+    GCP_DB_PASSWORD: ${{ secrets.GCP_DB_PASSWORD }}
+    GCP_DB_NAME: ${{ secrets.GCP_DB_NAME }}
+    GCP_KMS_KEY_RING: ${{ secrets.GCP_KMS_KEY_RING }}
+    GCP_KMS_CRYPTO_KEY: ${{ secrets.GCP_KMS_CRYPTO_KEY }}      
+    GCP_GROUP_MANAGER: ${{ secrets.GCP_GROUP_MANAGER }}  
+
 on:
   push:
     branches:
@@ -60,27 +71,27 @@ jobs:
 
       - name: Create Instance Template
         run: |
-          gcloud compute instance-templates create webappinstance-${{ steps.packer-build.outputs.image_name }} \
-            --project=devv-414701 \
+            gcloud compute instance-templates create webappinstance-${{ steps.packer-build.outputs.image_name }} \
+            --project="${GCP_PROJECT_ID}" \
             --machine-type=n1-standard-1 \
             --network-interface=subnet=webapp,no-address \
-            --instance-template-region=us-east1 \
+            --instance-template-region="${GCP_REGION}" \
             --metadata=startup-script="#!/bin/bash
-              if [ ! -f \"/opt/webapp/.env\" ]; then
+            if [ ! -f \"/opt/webapp/.env\" ]; then
                 touch /opt/webapp/.env
-              fi
-              echo 'DBHOST=10.247.90.2' > /opt/webapp/.env
-              echo 'DBUSER=webapp' >> /opt/webapp/.env
-              echo 'DBPASSWORD=SUPXzDll528hVBvL' >> /opt/webapp/.env
-              echo 'DBNAME=webapp' >> /opt/webapp/.env
-              " \
+            fi
+            echo 'DBHOST=${GCP_DB_HOST}' > /opt/webapp/.env
+            echo 'DBUSER=${GCP_DB_USER}' >> /opt/webapp/.env
+            echo 'DBPASSWORD=${GCP_DB_PASSWORD}' >> /opt/webapp/.env
+            echo 'DBNAME=${GCP_DB_NAME}' >> /opt/webapp/.env
+            " \
             --maintenance-policy=MIGRATE \
             --provisioning-model=STANDARD \
-            --service-account=webapp@devv-414701.iam.gserviceaccount.com \
+            --service-account=webapp@${GCP_PROJECT_ID}.iam.gserviceaccount.com \
             --scopes=https://www.googleapis.com/auth/cloud-platform \
-            --region=us-east1 \
+            --region="${GCP_REGION}" \
             --tags=load-balanced-backend,allow-health-check,http-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/devv-414701/global/images/${{ steps.packer-build.outputs.image_name }},kms-key=projects/devv-414701/locations/us-east1/keyRings/9fmoh/cryptoKeys/instance-key9fmoh,mode=rw,size=100,type=pd-standard \
+            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${GCP_PROJECT_ID}/global/images/${{ steps.packer-build.outputs.image_name }},kms-key=projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/keyRings/${GCP_KEY_RING}/cryptoKeys/${GCP_CRYPTO_KEY},mode=rw,size=100,type=pd-standard \
             --no-shielded-secure-boot \
             --shielded-vtpm \
             --shielded-integrity-monitoring \
@@ -88,19 +99,19 @@ jobs:
 
       - name: Update Managed Instance Group
         run: |
-          gcloud compute instance-groups managed set-instance-template gp-manager \
-            --project=devv-414701 \
-            --region=us-east1 \
-            --template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance-${{ steps.packer-build.outputs.image_name }}
+            gcloud compute instance-groups managed set-instance-template "${GCP_GROUP_MANAGER}" \
+                --project="${GCP_PROJECT_ID}" \
+                --region="${GCP_REGION}" \
+                --template=projects/${GCP_PROJECT_ID}/regions/${GCP_REGION}/instanceTemplates/webappinstance-${{ steps.packer-build.outputs.image_name }}
 
       - name: Start Rolling Update
         run: |
-          gcloud compute instance-groups managed rolling-action start-update gp-manager \
-            --project=devv-414701 \
-            --type='proactive' \
-            --version=template=projects/devv-414701/regions/us-east1/instanceTemplates/webappinstance-${{ steps.packer-build.outputs.image_name }} \
-            --region=us-east1
+            gcloud compute instance-groups managed rolling-action start-update "${GCP_GROUP_MANAGER}" \
+                --project="${GCP_PROJECT_ID}" \
+                --type='proactive' \
+                --version=template=projects/${GCP_PROJECT_ID}/regions/${GCP_REGION}/instanceTemplates/webappinstance-${{ steps.packer-build.outputs.image_name }} \
+                --region="${GCP_REGION}"
 
       - name: Wait for Instance Group to Reach Target State
         run: |
-          gcloud compute instance-groups managed wait-until gp-manager --version-target-reached --region=us-east1
+             gcloud compute instance-groups managed wait-until "${GCP_GROUP_MANAGER}" --version-target-reached --region="${GCP_REGION}"
