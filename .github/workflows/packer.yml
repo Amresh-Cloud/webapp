@@ -81,26 +81,26 @@ jobs:
       - name: Create Instance Template
         run: |
             gcloud compute instance-templates create ${{ secrets.GCP_TEMPLATE_NAME}} \
-            --project=${{secrets.GCP_PROJECT_ID}} \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
             --machine-type=n1-standard-1 \
             --network-interface=subnet=webapp,no-address \
-            --instance-template-region=${{secrets.GCP_REGION}} \
+            --instance-template-region=${{ secrets.GCP_REGION }} \
             --metadata=startup-script="#!/bin/bash
             if [ ! -f \"/opt/webapp/.env\" ]; then
                 touch /opt/webapp/.env
             fi
-            echo 'DBHOST=${{secrets.GCP_DB_HOST}}' > /opt/webapp/.env
-            echo 'DBUSER=${{secrets.GCP_DB_USER}}' >> /opt/webapp/.env
-            echo 'DBPASSWORD=${{secrets.GCP_DB_PASSWORD}}' >> /opt/webapp/.env
-            echo 'DBNAME=${{secrets.GCP_DB_NAME}}' >> /opt/webapp/.env
+            echo 'DBHOST=${{ secrets.GCP_DB_HOST }}' > /opt/webapp/.env
+            echo 'DBUSER=${{ secrets.GCP_DB_USER }}' >> /opt/webapp/.env
+            echo 'DBPASSWORD=${{ secrets.GCP_DB_PASSWORD }}' >> /opt/webapp/.env
+            echo 'DBNAME=${{ secrets.GCP_DB_NAME }}' >> /opt/webapp/.env
             " \
             --maintenance-policy=MIGRATE \
             --provisioning-model=STANDARD \
-            --service-account=webapp@${{secrets.GCP_PROJECT_ID}}.iam.gserviceaccount.com \
+            --service-account=webapp@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com \
             --scopes=https://www.googleapis.com/auth/cloud-platform \
-            --region=${{secrets.GCP_REGION}} \
+            --region=${{ secrets.GCP_REGION }} \
             --tags=load-balanced-backend,allow-health-check,http-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${{secrets.GCP_PROJECT_ID}}/global/images/${{ steps.packer-build.outputs.image_name }},kms-key=projects/${{secrets.GCP_PROJECT_ID}}/locations/${{secrets.GCP_REGION}}/keyRings/${{secrets.GCP_KMS_KEY_RING}}/cryptoKeys/${{secrets.GCP_KMS_CRYPTO_KEY}},mode=rw,size=100,type=pd-standard \
+            --create-disk=auto-delete=yes,boot=yes,device-name=persistent-disk-0,image=projects/${{ secrets.GCP_PROJECT_ID }}/global/images/${{ steps.packer-build.outputs.image_name }},kms-key=projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/keyRings/${{ secrets.GCP_KMS_KEY_RING }}/cryptoKeys/${{ secrets.GCP_KMS_CRYPTO_KEY }},mode=rw,size=100,type=pd-standard \
             --no-shielded-secure-boot \
             --shielded-vtpm \
             --shielded-integrity-monitoring \
@@ -111,16 +111,16 @@ jobs:
             gcloud compute instance-groups managed set-instance-template ${{ secrets.GCP_GROUP_MANAGER }} \
                 --project=${{ secrets.GCP_PROJECT_ID }} \
                 --region=${{ secrets.GCP_REGION }} \
-                --template=projects/${{ secrets.GCP_PROJECT_ID }}/regions/${{ secrets.GCP_REGION }}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME}}
+                --template=projects/${{ secrets.GCP_PROJECT_ID }}/regions/${{ secrets.GCP_REGION }}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME }}
 
       - name: Start Rolling Update
         run: |
             gcloud compute instance-groups managed rolling-action start-update "${GCP_GROUP_MANAGER}" \
-                --project=${{secrets.GCP_PROJECT_ID}} \
+                --project=${{ secrets.GCP_PROJECT_ID }} \
                 --type='proactive' \
-                --version=template=projects/${{secrets.GCP_PROJECT_ID}}/regions/${{secrets.GCP_REGION}}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME}} \
-                --region=${{secrets.GCP_REGION}}
+                --version=template=projects/${{ secrets.GCP_PROJECT_ID }}/regions/${{ secrets.GCP_REGION }}/instanceTemplates/${{ secrets.GCP_TEMPLATE_NAME }} \
+                --region=${{ secrets.GCP_REGION }}
 
       - name: Wait for Instance Group to Reach Target State
         run: |
-            gcloud compute instance-groups managed wait-until ${{secrets.GCP_GROUP_MANAGER}} --version-target-reached --region=${{secrets.GCP_REGION}}
+            gcloud compute instance-groups managed wait-until ${{ secrets.GCP_GROUP_MANAGER }} --version-target-reached --region=${{ secrets.GCP_REGION }}
