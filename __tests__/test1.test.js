@@ -8,7 +8,7 @@ require("dotenv").config();
 
 describe("User API Integration Tests", () => {
   beforeAll(async () => {
-    await sequelize.sync({ force: true }); // Sync models with the database
+    await sequelize.sync(); // Sync models with the database
   });
 
   afterAll(async () => {
