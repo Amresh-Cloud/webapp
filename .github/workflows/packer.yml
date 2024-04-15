@@ -11,7 +11,7 @@ env:
 
 on:
    push:
-    branches: [main, review]
+    branches: [main]
 
 jobs:
   validate-packer-build:

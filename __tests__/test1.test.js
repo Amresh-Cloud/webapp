@@ -21,7 +21,7 @@ describe("User API Integration Tests", () => {
   });
 
   it("Test 1 - Create Account and Get User", async () => {
-    const response = await request(app).post("/v1/user").send({
+    const response = await request(app).post("/v2/user").send({
       first_name: "Rajiv",
       last_name: "Singh",
       password: "Pass@123",
@@ -31,7 +31,7 @@ describe("User API Integration Tests", () => {
     expect(response.status).toBe(201);
 
     const getCreatedUser = await request(app)
-      .get("/v1/user/self")
+      .get("/v2/user/self")
       .set(
         "Authorization",
         `Basic ${Buffer.from("rajiv@test.com:Pass@123").toString("base64")}`
@@ -41,7 +41,7 @@ describe("User API Integration Tests", () => {
   });
 
   it("Test 2 - Create Account and Validate using Get Call", async () => {
-    const response = await request(app).post("/v1/user").send({
+    const response = await request(app).post("/v2/user").send({
       first_name: "Sourav",
       last_name: "Singh",
       password: "Pass@1234",
@@ -51,7 +51,7 @@ describe("User API Integration Tests", () => {
     expect(response.status).toBe(201);
 
     const update = await request(app)
-      .put("/v1/user/self")
+      .put("/v2/user/self")
       .set(
         "Authorization",
         `Basic ${Buffer.from("sourav@test.com:Pass@1234").toString("base64")}`
@@ -64,7 +64,7 @@ describe("User API Integration Tests", () => {
 
     expect(update.status).toBe(204);
     const getUpdated = await request(app)
-      .get("/v1/user/self")
+      .get("/v2/user/self")
       .set(
         "Authorization",
         `Basic ${Buffer.from("sourav@test.com:Pass@12345").toString("base64")}`
