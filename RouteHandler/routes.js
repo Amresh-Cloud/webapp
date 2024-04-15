@@ -52,7 +52,7 @@ router.get("/healthz", async (req, res) => {
   }
 });
 
-router.post("/v1/user", async (req, res) => {
+router.post("/v2/user", async (req, res) => {
   try {
     await sequelize.authenticate();
     const { first_name, last_name, password, username, ...extraFields } =
@@ -186,7 +186,7 @@ router.post("/v1/user", async (req, res) => {
   }
 });
 
-router.get("/v1/user/self", verifyUser, async (req, res) => {
+router.get("/v2/user/self", verifyUser, async (req, res) => {
   if (
     Object.keys(req.body).length !== 0 ||
     (req.query && Object.keys(req.query).length !== 0) ||
@@ -266,7 +266,7 @@ router.get("/v1/user/self", verifyUser, async (req, res) => {
   }
 });
 
-router.put("/v1/user/self", verifyUser, async (req, res) => {
+router.put("/v2/user/self", verifyUser, async (req, res) => {
   try {
     await sequelize.authenticate();
     const { first_name, last_name, password, ...extraFields } = req.body;
@@ -385,7 +385,7 @@ router.put("/v1/user/self", verifyUser, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.get("/v1/user/verify", async (req, res) => {
+router.get("/v2/user/verify", async (req, res) => {
   try {
     await sequelize.authenticate();
     const userId = req.query.id; // Extract user ID from query parameters
