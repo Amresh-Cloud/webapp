@@ -3,9 +3,11 @@ const app = express();
 const sequelize = require("./DatabaseConnection/connection");
 const routes=require("./RouteHandler/routes");
 const dbCheck = require("./Middleware/dbcheck");
+const methodNotAllowed= require("./Middleware/methodsNotAllowed");
 const logger=require("./utils/logger");
 const port = process.env.PORT || 2500;
 app.use("/v2",dbCheck);
+app.use(methodNotAllowed);
 app.use(routes);
 
 app.listen(port, () => {
